@@ -3,11 +3,13 @@
 import json
 import os
 import re
-import readline
 import sys
 import time
 
 import requests
+
+if os.name == 'posix':
+  import readline
 
 def get_images(save_location, board, thread_num, categories):
 
