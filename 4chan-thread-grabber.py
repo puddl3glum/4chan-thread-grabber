@@ -93,7 +93,7 @@ def repl(save_location, board):
       try:
         get_images(save_location, board, thread, categories)
       except json.decoder.JSONDecodeError:
-        print("Check to ensure thread number is correct and that you are not blocked")
+        print("Problems! The thread number was wrong, the thread was deleted, or you've been banned.")
         print("To check if you're blocked, visit http://a.4cdn.org/boards.json and confirm the site does not perform a browser check.")
     elif user_input == 'q' or user_input == 'quit':
       confirm = input('Are you sure you want to quit? Y/n: ')
@@ -117,11 +117,12 @@ def parse_args(args):
   if len(args) < 3:
     msg = """
     ARGUMENTS:
-      4chan-thread-image-grabber.py <save location> <board> [<thread>|-r|--repl]
+      4chan-thread-image-grabber.py <save location> <board> [<thread> categories* | -r | --repl]
 
       save location: e.g. Y:4chan_stuff/midterm
       board: e.g. pol
       thread: e.g. 111111111
+      categories: categories to label the thread as
 
       -r | --repl : start in REPL mode to keep entering threads
     """
@@ -142,6 +143,7 @@ def parse_args(args):
     # thread is required if repl not set
     parsed_args['thread'] = args[2]
     parsed_args['repl'] = False
+    parsed_args['categories'] = args[2:]
 
   parsed_args['save'] = args[0]
   parsed_args['board'] = args[1]
@@ -154,7 +156,7 @@ def main(args):
   p_args = parse_args(args)
 
   if not p_args['repl']:
-    get_images(p_args['save'], p_args['board'], p_args['thread'])
+    get_images(p_args['save'], p_args['board'], p_args['thread'], parse_args['categories'])
   else:
     repl(p_args['save'], p_args['board'])
 
