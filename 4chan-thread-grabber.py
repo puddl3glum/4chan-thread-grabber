@@ -3,12 +3,13 @@
 import json
 import os
 import re
+import readline
 import sys
 import time
 
 import requests
 
-def get_images(save_location, board, thread_num):
+def get_images(save_location, board, thread_num, categories):
 
   user_agent = {'User-agent': 'archive svc'}
   sess = requests.Session()
@@ -51,6 +52,9 @@ def get_images(save_location, board, thread_num):
     with open(f'{path}/{thread_num}.json', 'w') as f:
       f.write(thread_json)
 
+    with open(f'{path}/categories.txt', 'w') as f:
+      f.write('\n'.join(categories))
+
     with open(f'{path}/{image}', 'wb') as f:
       # r.raw.decode_content = True
       f.write(image_bin)
@@ -61,17 +65,31 @@ def repl(save_location, board):
 
   def helpmsg():
   
-    print('Type the name of the thread to grab. Type "help" to show this message. Type "quit" or "q" to quit')
+    print('Type the number of the thread to grab followed by a comma-separated list of the tags for the thread. Type "help" to show this message. Type "quit" or "q" to quit')
+    print('Example: 11111111 election interference, midterm bombings')
+    print('Please watch your spelling. If you spell it wrong, just re-do it :)')
 
   helpmsg()
 
   while True:
 
-    user_input = input(' > ')
+    user_input = input(' > ')    
 
     if re.match(f'\d+', user_input):
+
+      user_input = user_input.split(' ', 1)
+
+      if len(user_input) > 1:
+        thread, categories = user_input
+      else:
+        thread, categories = user_input[0], ''
+
+      print(thread)
+      print(categories)
+      
+      categories = [c.strip() for c in categories.split(',')]
       try:
-        get_images(save_location, board, user_input)
+        get_images(save_location, board, thread, categories)
       except json.decoder.JSONDecodeError:
         print("Check to ensure thread number is correct and that you are not blocked")
         print("To check if you're blocked, visit http://a.4cdn.org/boards.json and confirm the site does not perform a browser check.")
@@ -121,6 +139,7 @@ def parse_args(args):
   else:
     # thread is required if repl not set
     parsed_args['thread'] = args[2]
+    parsed_args['repl'] = False
 
   parsed_args['save'] = args[0]
   parsed_args['board'] = args[1]
