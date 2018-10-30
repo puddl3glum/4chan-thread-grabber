@@ -16,6 +16,7 @@ def get_images(save_location, board, thread_num):
   thread_url = f'http://a.4cdn.org/{board}/thread/{thread_num}.json'
 
   with sess.get(thread_url, ) as r:
+    thread_json = r.text
     thread = r.json()
 
       # do req again
@@ -45,6 +46,9 @@ def get_images(save_location, board, thread_num):
 
     if not os.path.exists(path):
       os.makedirs(path)
+
+    with open(f'{path}/{thread_num}.json', 'w') as f:
+      f.write(thread_json)
 
     with open(f'{path}/{image}', 'wb') as f:
       # r.raw.decode_content = True
