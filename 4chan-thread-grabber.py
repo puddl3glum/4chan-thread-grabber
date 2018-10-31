@@ -11,14 +11,14 @@ import requests
 if os.name == 'posix':
   import readline
 
-def get_image(board: str, image_name):
+def request_image(board: str, image_name):
   image_url = f'http://i.4cdn.org/{board}/{image_name}'
 
   with requests.get(image_url) as i:
     image_bin = i.content
   return image_bin
 
-def get_thread(board: str, thread_num: str):
+def request_thread(board: str, thread_num: str):
   thread_url = f'http://a.4cdn.org/{board}/thread/{thread_num}.json'
 
   with requests.get(thread_url) as r:
@@ -28,7 +28,7 @@ def get_thread(board: str, thread_num: str):
 
 def get_thread(save_location, board, thread_num, categories):
 
-  thread, thread_json = get_thread(board, thread_num)
+  thread, thread_json = request_thread(board, thread_num)
 
   images = [f"{p['tim']}{p['ext']}" for p in thread['posts'] if 'tim' in p]
   
@@ -38,7 +38,7 @@ def get_thread(save_location, board, thread_num, categories):
     time.sleep(1.1)
 
     # download the images now:
-    image_bin = get_image(board, image)
+    image_bin = request_image(board, image)
 
     path = f'{save_location}/{thread_num}'
 
