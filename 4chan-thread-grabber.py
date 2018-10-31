@@ -11,40 +11,34 @@ import requests
 if os.name == 'posix':
   import readline
 
-def get_images(save_location, board, thread_num, categories):
+def get_image(board: str, image_name):
+  image_url = f'http://i.4cdn.org/{board}/{image_name}'
 
-  user_agent = {'User-agent': 'archive svc'}
-  sess = requests.Session()
-  sess.headers.update(user_agent)
+  with requests.get(image_url) as i:
+    image_bin = i.content
+  return image_bin
 
+def get_thread(board: str, thread_num: str):
   thread_url = f'http://a.4cdn.org/{board}/thread/{thread_num}.json'
 
-  with sess.get(thread_url, ) as r:
+  with requests.get(thread_url) as r:
     thread_json = r.text
     thread = r.json()
+  return thread, thread_json
 
-      # do req again
+def get_thread(save_location, board, thread_num, categories):
+
+  thread, thread_json = get_thread(board, thread_num)
 
   images = [f"{p['tim']}{p['ext']}" for p in thread['posts'] if 'tim' in p]
-  # print(images)
-  # quit()
-
   
   for idx, image in enumerate(images):
-    # print(post['tim'])
 
     # sleep a sec to follow da rulez
     time.sleep(1.1)
 
-    image_url = f'http://i.4cdn.org/{board}/{image}'
-
     # download the images now:
-    with sess.get(image_url) as i:
-      # i.raw.decode_content = True
-      # image_bin = i.raw
-      image_bin = i.content
-      # print(image_url)
-      # print(i.text[:20])
+    image_bin = get_image(board, image)
 
     path = f'{save_location}/{thread_num}'
 
@@ -58,10 +52,10 @@ def get_images(save_location, board, thread_num, categories):
       f.write('\n'.join(categories))
 
     with open(f'{path}/{image}', 'wb') as f:
-      # r.raw.decode_content = True
       f.write(image_bin)
 
-    print(f'DONE {idx + 1} OUT OF {len(images)}')
+    sys.stdout.write(f'\rDONE {idx + 1} OUT OF {len(images)}')
+    sys.stdout.flush()
 
 def repl(save_location, board):
 
@@ -91,7 +85,7 @@ def repl(save_location, board):
       
       categories = [c.strip() for c in categories.split(',')]
       try:
-        get_images(save_location, board, thread, categories)
+        get_thread(save_location, board, thread, categories)
       except json.decoder.JSONDecodeError:
         print("Problems! The thread number was wrong, the thread was deleted, or you've been banned.")
         print("To check if you're blocked, visit http://a.4cdn.org/boards.json and confirm the site does not perform a browser check.")
@@ -156,7 +150,7 @@ def main(args):
   p_args = parse_args(args)
 
   if not p_args['repl']:
-    get_images(p_args['save'], p_args['board'], p_args['thread'], parse_args['categories'])
+    get_thread(p_args['save'], p_args['board'], p_args['thread'], parse_args['categories'])
   else:
     repl(p_args['save'], p_args['board'])
 
