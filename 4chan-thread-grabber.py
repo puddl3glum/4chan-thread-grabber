@@ -29,8 +29,11 @@ def request_thread(board: str, thread_num: str):
 def get_thread(save_location, board, thread_num, categories):
 
   thread, thread_json = request_thread(board, thread_num)
-
+  
+  dir_contents = os.listdir(save_location)
+  # images = list(filter(lambda img: img not in dir_contents, [f"{p['tim']}{p['ext']}" for p in thread['posts'] if 'tim' in p]))
   images = [f"{p['tim']}{p['ext']}" for p in thread['posts'] if 'tim' in p]
+  images = [image for image in images if image not in dir_contents]
   
   for idx, image in enumerate(images):
 
@@ -45,7 +48,7 @@ def get_thread(save_location, board, thread_num, categories):
     if not os.path.exists(path):
       os.makedirs(path)
 
-    with open(f'{path}/{thread_num}.json', 'w') as f:
+    with open(f'{path}/{thread_num}_{time.time()}.json', 'w') as f:
       f.write(thread_json)
 
     with open(f'{path}/categories.txt', 'w') as f:
@@ -56,6 +59,7 @@ def get_thread(save_location, board, thread_num, categories):
 
     sys.stdout.write(f'\rDONE {idx + 1} OUT OF {len(images)}')
     sys.stdout.flush()
+  print()
 
 def repl(save_location, board):
 
